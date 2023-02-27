@@ -1,0 +1,191 @@
+@startuml
+class service.Delete {
+- StaffList staffList
+- Store store
++ <<Create>> Delete(StaffList,Store)
++ void handle(HttpExchange)
+}
+class service.Experimentor {
+~ {static} int basicWorkload
+~ {static} int basicSalary
++ int calcSalaryAsPrimary(int)
++ int calcSalaryAsSecondary()
++ int getRoleId()
+}
+interface service.Role {
+~ {static} long serialVersionUID
+~ int calcSalaryAsPrimary(int)
+~ int calcSalaryAsSecondary()
+~ int getRoleId()
+}
+interface network.ApiHandler {
+~ void handle(HttpExchange)
+}
+class service.Staff {
+- {static} long serialVersionUID
+- Role primaryRole
+- Role secondaryRole
+- String uid
+- String name
+- int workload
++ <<Create>> Staff(String)
++ void setWorkload(int)
++ String getUid()
++ String getName()
++ void setName(String)
+~ void setPrimaryRole(Role)
+~ Role getPrimaryRole()
+~ void setSecondaryRole(Role)
+~ Role getSecondaryRole()
+~ int getSalary()
+- String addQuotes(String)
++ String toJson()
+}
+class utils.ArrayUtils {
++ {static} String join(String[],String)
+}
+class utils.HttpUtils {
+- {static} boolean showingDebugInfo
++ {static} Map<String,String> parseQuery(String)
++ {static} String toQueryString(Map<String,String>)
++ {static} String getResponseBodyString(HttpExchange)
++ {static} void addJsonHeader(HttpExchange)
++ {static} boolean debugInfo()
++ {static} void debugInfo(boolean)
++ {static} void debugInfo(String)
+}
+class service.Query {
+- StaffList staffList
++ <<Create>> Query(StaffList)
++ void handle(HttpExchange)
+}
+class service.All {
+- StaffList staffList
++ <<Create>> All(StaffList)
++ void handle(HttpExchange)
+}
+class network.WebHandler {
+- {static} Map<String,String> mimeTypes
+- ApiHandler apiHandler
++ void handle(HttpExchange)
+~ String getSuffix(String)
++ void setApiHandler(ApiHandler)
+- void handleApiRequest(HttpExchange)
+}
+class service.RoleFactory {
++ {static} Role build(int)
+}
+interface utils.Attempt {
++ Object run(Object)
+}
+class persistence.Storage {
+- {static} Map<String,Store> record
++ {static} Store open(String)
+- {static} Store getNewStore(String)
+}
+class App {
++ {static} void main(String[])
+~ void startApp()
+~ void startServer(Store)
+}
+class service.Execs {
+~ {static} int basicSalary
++ int calcSalaryAsPrimary(int)
++ int calcSalaryAsSecondary()
++ int getRoleId()
+}
+class service.Initialize {
+- StaffList staffList
+- Map<String,ApiHandler> handlers
++ void init(Store)
++ void handle(HttpExchange)
+}
+class utils.Tries {
++ {static} Tryment flow(Attempt)
+}
+interface utils.Tries.Tryment {
+~ Tryment then(Attempt)
+~ Tryment caught(Attempt)
+~ void start()
+}
+class utils.Tries.TrymentImpl {
+- List<Attempt> onSucCallbacks
+- List<Attempt> onErrCallbacks
+- Attempt attempt
+~ <<Create>> TrymentImpl(Attempt)
+- void _callAttemptWithResult(Attempt,_Callback)
+- void _invokeAttempt(Attempt)
+~ {static} void succeed(TrymentImpl,Object)
+~ {static} void failed(TrymentImpl,Exception)
++ Tryment then(Attempt)
++ Tryment caught(Attempt)
++ void start()
+}
+interface utils.Tries.TrymentImpl._Callback {
+~ void run(TryResult)
+}
+interface persistence.Store {
+~ String getFilePath()
+~ void set(String,Object)
+~ boolean delete(String)
+~ Object get(String)
+~ Set<String> keys()
+~ void commit()
+}
+class persistence.StoreImpl {
+- String filePath
+- HashMap<String,Object> map
+~ <<Create>> StoreImpl(String)
+- void initialize(ObjectInputStream)
++ String getFilePath()
++ Object get(String)
+- void writeMap()
++ void set(String,Object)
++ boolean delete(String)
++ void commit()
++ Set<String> keys()
+}
+class service.Put {
+- StaffList staffList
+- Store store
++ <<Create>> Put(StaffList,Store)
++ void handle(HttpExchange)
+- void editStaff(Staff,Map<String,String>)
+}
+class network.Server {
++ {static} HttpServer listen(int,WebHandler)
+}
+class service.StaffList {
+- String name
++ <<Create>> StaffList(String)
++ void saveList(Store)
++ {static} StaffList getList(Store,String)
++ String toJson()
+}
+class service.Teacher {
+~ {static} int basicWorkload
+~ {static} int basicSalary
++ int calcSalaryAsPrimary(int)
++ int calcSalaryAsSecondary()
++ int getRoleId()
+}
+
+
+network.ApiHandler <|.. service.Delete
+service.Role <|.. service.Experimentor
+java.io.Serializable <|-- service.Role
+java.io.Serializable <|.. service.Staff
+network.ApiHandler <|.. service.Query
+network.ApiHandler <|.. service.All
+com.sun.net.httpserver.HttpHandler <|.. network.WebHandler
+service.Role <|.. service.Execs
+network.ApiHandler <|.. service.Initialize
+utils.Tries +.. utils.Tries.Tryment
+utils.Tries +.. utils.Tries.TrymentImpl
+utils.Tryment <|.. utils.Tries.TrymentImpl
+utils.Tries.TrymentImpl +.. utils.Tries.TrymentImpl._Callback
+persistence.Store <|.. persistence.StoreImpl
+network.ApiHandler <|.. service.Put
+java.util.ArrayList <|-- service.StaffList
+service.Role <|.. service.Teacher
+@enduml
